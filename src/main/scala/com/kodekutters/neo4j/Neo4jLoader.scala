@@ -16,7 +16,6 @@ import org.neo4j.driver.v1.{AuthTokens, GraphDatabase}
 import scala.collection.JavaConverters._
 import com.typesafe.config.ConfigFactory
 
-
 /**
   * loads Stix-2.1 objects and relationships into a Neo4j graph database
   *
@@ -193,7 +192,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
       s",lang:'${clean(x.lang.getOrElse(""))}'" +
       s",object_marking_refs:$object_marking_refs_arr" +
       s",granular_markings:$granular_markings_ids" +
-      s",created_by_ref:'${x.created_by_ref.getOrElse("")}'"
+      s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'"
 
     // write the external_references
     writeExternRefs(x.id.toString(), x.external_references, external_references_ids)
@@ -341,7 +340,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
       s",lang:'${clean(x.lang.getOrElse(""))}'" +
       s",object_marking_refs:$object_marking_refs_arr" +
       s",granular_markings:$granular_markings_ids" +
-      s",created_by_ref:'${x.created_by_ref.getOrElse("")}'"
+      s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'"
 
     // write the external_references
     writeExternRefs(x.id.toString(), x.external_references, external_references_ids)
@@ -402,7 +401,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
           s",external_references:$external_references_ids" +
           s",object_marking_refs:$object_marking_refs_arr" +
           s",granular_markings:$granular_markings_ids" +
-          s",created_by_ref:'${x.created_by_ref.getOrElse("")}'" + "})"
+          s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'" + "})"
 
         // write the external_references
         writeExternRefs(x.id.toString(), x.external_references, external_references_ids)
@@ -430,7 +429,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
           s",external_references:$external_references_ids" +
           s",object_marking_refs:$object_marking_refs_arr" +
           s",granular_markings:$granular_markings_ids" +
-          s",created_by_ref:'${x.created_by_ref.getOrElse("")}'" + "})"
+          s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'" + "})"
 
         // write the external_references
         writeExternRefs(x.id.toString(), x.external_references, external_references_ids)
