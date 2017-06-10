@@ -507,7 +507,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
       val temp = granular_markings_ids.replace("[", "").replace("]", "")
       val kp = (temp.split(",") zip granulars).foreach(
         { case (a, (b, c, d, e)) =>
-          val script = s"CREATE ($d {granular_marking_id:$a" +
+          val script = s"CREATE ($e {granular_marking_id:$a" +
             s",selectors:$b,marking_ref:'$c',lang:'$d'})"
           session.run(script)
         }
