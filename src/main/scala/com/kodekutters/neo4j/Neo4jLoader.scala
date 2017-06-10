@@ -261,7 +261,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
         val y = x.asInstanceOf[Report]
         val object_refs_ids = toIdArray(y.object_refs)
         val script = commonPart(Report.`type`) +
-          s",name:'${clean(y.name)}',published:'${y.published}'" +
+          s",name:'${clean(y.name)}',published:'${y.published.toString()}'" +
           s",object_refs_ids:$object_refs_ids" +
           s",description:'${clean(y.description.getOrElse(""))}'" + "})"
         session.run(script)
