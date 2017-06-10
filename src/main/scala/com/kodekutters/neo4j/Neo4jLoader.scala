@@ -484,8 +484,8 @@ class Neo4jLoader private(inFile: String, confFile: String) {
       val temp = external_references_ids.replace("[", "").replace("]", "")
       val kp = (temp.split(",") zip externRefs).foreach(
         { case (a, (b, c, d, e, f)) =>
-          val script = s"CREATE (${asCleanLabel(e)} {external_reference_id:$a" +
-            s",source_name:'$b',description:'$c',url:'$d',external_id:'$f'})"
+          val script = s"CREATE ($f {external_reference_id:$a" +
+            s",source_name:'$b',description:'$c',url:'$d',external_id:'$e'})"
           session.run(script)
         }
       )
