@@ -79,7 +79,9 @@ in each.
  
 ### Status
 
-not finished 
+not finished.
+
+Loading small files is very slow. 
 
 Using Scala 2.12, Java 8 and SBT-0.13.15.
 

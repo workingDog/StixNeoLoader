@@ -9,7 +9,6 @@ scalaVersion := "2.12.2"
 crossScalaVersions := Seq("2.12.2")
 
 libraryDependencies ++= Seq(
-  "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
   "org.neo4j.driver" % "neo4j-java-driver" % "1.4.0-rc1",
   "com.typesafe" % "config" % "1.3.1"
 )
