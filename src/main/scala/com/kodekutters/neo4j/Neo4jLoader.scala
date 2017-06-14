@@ -201,6 +201,8 @@ class Neo4jLoader private(inFile: String, confFile: String) {
     writeGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
     // write the created-by relation
     writeCreatedBy(x.id.toString(), x.created_by_ref)
+    // the object marking relations
+    writeObjRefs(x.id.toString(), x.object_marking_refs, object_marking_refs_arr, "MARKING")
 
     x.`type` match {
 
@@ -268,7 +270,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
           s",object_refs_ids:$object_refs_ids" +
           s",description:'${clean(y.description.getOrElse(""))}'" + "})"
         session.run(script)
-        writeObjRefs(y.id.toString(), y.object_refs, object_refs_ids, Neo4jLoader.objectRefs)
+        writeObjRefs(y.id.toString(), y.object_refs, object_refs_ids, "REFERS_TO")
 
       case ThreatActor.`type` =>
         val y = x.asInstanceOf[ThreatActor]
