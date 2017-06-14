@@ -28,6 +28,7 @@ object Neo4jLoader {
   val observedDataRefs = "observed_data_refs"
   val whereSightedRefs = "where_sighted_refs"
   val markingObjRefs = "marking_object_refs"
+  val createdByRefs = "created_by"
 
   // must use this constructor, class is private
   def apply(inFile: String, conf: String) = new Neo4jLoader(inFile, conf)
@@ -181,9 +182,9 @@ class Neo4jLoader private(inFile: String, confFile: String) {
     val granular_markings_ids = toIdArray(x.granular_markings)
     val external_references_ids = toIdArray(x.external_references)
     val object_marking_refs_arr = toStringIds(x.object_marking_refs)
-    val nodeLabel = asCleanLabel(x.`type`)
+    val nodeAndLabel = asCleanLabel(asCleanLabel(x.`type`)) + ":" + asCleanLabel(x.`type`) + ":SDO"
 
-    def commonPart(node: String) = s"CREATE (${asCleanLabel(node)}:SDO {id:'${x.id.toString()}'" +
+    def commonPart() = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}'" +
       s",type:'${x.`type`}'" +
       s",created:'${x.created.time}',modified:'${x.modified.time}'" +
       s",revoked:${x.revoked.getOrElse("false")},labels:$labelsString" +
@@ -198,13 +199,15 @@ class Neo4jLoader private(inFile: String, confFile: String) {
     writeExternRefs(x.id.toString(), x.external_references, external_references_ids)
     // write the granular_markings
     writeGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
+    // write the created-by relation
+    writeCreatedBy(x.id.toString(), x.created_by_ref)
 
     x.`type` match {
 
       case AttackPattern.`type` =>
         val y = x.asInstanceOf[AttackPattern]
         val kill_chain_phases_ids = toIdArray(y.kill_chain_phases)
-        val script = commonPart(AttackPattern.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" +
           s",kill_chain_phases:$kill_chain_phases_ids" + "})"
         session.run(script)
@@ -212,7 +215,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
 
       case Identity.`type` =>
         val y = x.asInstanceOf[Identity]
-        val script = commonPart(Identity.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',identity_class:'${clean(y.identity_class)}'" +
           s",sectors:${toStringArray(y.sectors)}" +
           s",contact_information:'${clean(y.contact_information.getOrElse(""))}'" +
@@ -221,7 +224,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
 
       case Campaign.`type` =>
         val y = x.asInstanceOf[Campaign]
-        val script = commonPart(Campaign.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',objective:'${clean(y.objective.getOrElse(""))}'" +
           s",aliases:${toStringArray(y.aliases)}" +
           s",first_seen:'${clean(y.first_seen.getOrElse("").toString)}" +
@@ -231,13 +234,13 @@ class Neo4jLoader private(inFile: String, confFile: String) {
 
       case CourseOfAction.`type` =>
         val y = x.asInstanceOf[CourseOfAction]
-        val script = commonPart(CourseOfAction.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" + "})"
         session.run(script)
 
       case IntrusionSet.`type` =>
         val y = x.asInstanceOf[IntrusionSet]
-        val script = commonPart(IntrusionSet.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" +
           s",aliases:${toStringArray(y.aliases)}" +
           s",first_seen:'${clean(y.first_seen.getOrElse("").toString)}'" +
@@ -251,7 +254,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
       case Malware.`type` =>
         val y = x.asInstanceOf[Malware]
         val kill_chain_phases_ids = toIdArray(y.kill_chain_phases)
-        val script = commonPart(Malware.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" +
           s",kill_chain_phases:$kill_chain_phases_ids" + "})"
         session.run(script)
@@ -260,7 +263,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
       case Report.`type` =>
         val y = x.asInstanceOf[Report]
         val object_refs_ids = toIdArray(y.object_refs)
-        val script = commonPart(Report.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',published:'${y.published.toString()}'" +
           s",object_refs_ids:$object_refs_ids" +
           s",description:'${clean(y.description.getOrElse(""))}'" + "})"
@@ -269,7 +272,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
 
       case ThreatActor.`type` =>
         val y = x.asInstanceOf[ThreatActor]
-        val script = commonPart(ThreatActor.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" +
           s",aliases:${toStringArray(y.aliases)}" +
           s",roles:${toStringArray(y.roles)}" +
@@ -284,7 +287,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
       case Tool.`type` =>
         val y = x.asInstanceOf[Tool]
         val kill_chain_phases_ids = toIdArray(y.kill_chain_phases)
-        val script = commonPart(Tool.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" +
           s",kill_chain_phases:$kill_chain_phases_ids" +
           s",tool_version:'${clean(y.tool_version.getOrElse(""))}'" + "})"
@@ -293,14 +296,14 @@ class Neo4jLoader private(inFile: String, confFile: String) {
 
       case Vulnerability.`type` =>
         val y = x.asInstanceOf[Vulnerability]
-        val script = commonPart(Vulnerability.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" + "})"
         session.run(script)
 
       case Indicator.`type` =>
         val y = x.asInstanceOf[Indicator]
         val kill_chain_phases_ids = toIdArray(y.kill_chain_phases)
-        val script = commonPart(Indicator.`type`) +
+        val script = commonPart() +
           s",name:'${clean(y.name.getOrElse(""))}',description:'${clean(y.description.getOrElse(""))}'" +
           s",pattern:'${clean(y.pattern)}'" +
           s",valid_from:'${y.valid_from.toString()}'" +
@@ -312,7 +315,7 @@ class Neo4jLoader private(inFile: String, confFile: String) {
       // todo  objects: Map[String, Observable],
       case ObservedData.`type` =>
         val y = x.asInstanceOf[ObservedData]
-        val script = commonPart(ObservedData.`type`) +
+        val script = commonPart() +
           s",first_observed:'${y.first_observed.toString()}" +
           s",last_observed:'${y.last_observed.toString()}" +
           s",number_observed:'${y.number_observed}" +
@@ -346,6 +349,8 @@ class Neo4jLoader private(inFile: String, confFile: String) {
     writeExternRefs(x.id.toString(), x.external_references, external_references_ids)
     // write the granular_markings
     writeGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
+    // write the created-by relation
+    writeCreatedBy(x.id.toString(), x.created_by_ref)
 
     if (x.isInstanceOf[Relationship]) {
       val y = x.asInstanceOf[Relationship]
@@ -355,8 +360,9 @@ class Neo4jLoader private(inFile: String, confFile: String) {
         s",relationship_type:'${asCleanLabel(y.relationship_type)}'" +
         s",description:'${clean(y.description.getOrElse(""))}'"
 
+      val lbl = asCleanLabel(y.relationship_type) + ":" + asCleanLabel(y.relationship_type)
       val script = s"MATCH (source {id:'${y.source_ref.toString()}'}), (target {id:'${y.target_ref.toString()}'}) " +
-        s"CREATE (source)-[${asCleanLabel(y.relationship_type)}:SRO {$props}]->(target)"
+        s"CREATE (source)-[$lbl {$props}]->(target)"
       session.run(script)
     }
     else { // must be a Sighting todo ----> target_ref  observed_data_refs heading
@@ -373,8 +379,9 @@ class Neo4jLoader private(inFile: String, confFile: String) {
         s",where_sighted_refs_id:$where_sighted_refs_ids" +
         s",description:'${clean(y.description.getOrElse(""))}'"
 
+      val lbl = Sighting.`type` + ":" + Sighting.`type`
       val script = s"MATCH (source {id:'${y.sighting_of_ref.toString}'}), (target {id:'${y.sighting_of_ref.toString}'}) " +
-        s"CREATE (source)-[${Sighting.`type`}:SRO {$props}]->(target)"
+        s"CREATE (source)-[$lbl {$props}]->(target)"
       session.run(script)
 
       writeObjRefs(y.id.toString(), y.observed_data_refs, observed_data_ids, Neo4jLoader.observedDataRefs)
@@ -392,8 +399,9 @@ class Neo4jLoader private(inFile: String, confFile: String) {
         val granular_markings_ids = toIdArray(x.granular_markings)
         val external_references_ids = toIdArray(x.external_references)
         val object_marking_refs_arr = toStringIds(x.object_marking_refs)
+        val nodeAndLabel = asCleanLabel(asCleanLabel(x.`type`)) + ":" + asCleanLabel(x.`type`) + ":StixObj"
 
-        def commonPart(node: String) = s"CREATE (${asCleanLabel(node)}:StixObj {id:'${x.id.toString()}'" +
+        def commonPart() = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}'" +
           s",type:'${x.`type`}'" +
           s",created:'${x.created.time}'" +
           s",definition_type:'${clean(x.definition_type)}'" +
@@ -409,7 +417,9 @@ class Neo4jLoader private(inFile: String, confFile: String) {
         writeGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
         // write the marking object definition
         writeMarkingObjRefs(x.id.toString(), x.definition, definition_id)
-        session.run(commonPart(MarkingDefinition.`type`))
+        // write the created-by relation
+        writeCreatedBy(x.id.toString(), x.created_by_ref)
+        session.run(commonPart())
 
       // todo <----- contents: Map[String, Map[String, String]]
       case x: LanguageContent =>
@@ -417,8 +427,9 @@ class Neo4jLoader private(inFile: String, confFile: String) {
         val granular_markings_ids = toIdArray(x.granular_markings)
         val external_references_ids = toIdArray(x.external_references)
         val object_marking_refs_arr = toStringIds(x.object_marking_refs)
+        val nodeAndLabel = asCleanLabel(asCleanLabel(x.`type`)) + ":" + asCleanLabel(x.`type`) + ":StixObj"
 
-        def commonPart(node: String) = s"CREATE (${asCleanLabel(node)}:StixObj {id:'${x.id.toString()}'" +
+        def commonPart() = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}'" +
           s",type:'${x.`type`}'" +
           s",created:'${x.created.time}'" +
           s",modified:'${x.modified.time}'" +
@@ -435,12 +446,23 @@ class Neo4jLoader private(inFile: String, confFile: String) {
         writeExternRefs(x.id.toString(), x.external_references, external_references_ids)
         // write the granular_markings
         writeGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
-        session.run(commonPart(LanguageContent.`type`))
+        // write the created-by relation
+        writeCreatedBy(x.id.toString(), x.created_by_ref)
+        session.run(commonPart())
 
     }
   }
 
   //--------------------------------------------------------------------------------------------
+
+  // write the created-by relation between idString and the Identifier
+  def writeCreatedBy(idString: String, tgtOpt: Option[Identifier]) = {
+    tgtOpt.map(tgt => {
+      val relScript = s"MATCH (source {id:'$idString'}), (target {id:'${tgt.toString()}'}) " +
+        s"CREATE (source)-[:CREATED_BY]->(target)"
+      session.run(relScript)
+    })
+  }
 
   // write the marking object
   def writeMarkingObjRefs(idString: String, definition: MarkingObject, definition_id: String) = {

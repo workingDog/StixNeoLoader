@@ -32,7 +32,7 @@ object StixNeoLoader {
     if (args.isEmpty)
       println(usage)
     else {
-      val conf: String = if (args.length == 3) args(2).trim else ""
+      val conf = if (args.length == 3) args(2).trim else ""
       val confFile = if (conf.isEmpty) new java.io.File(".").getCanonicalPath + "/application.conf" else conf
       args(0) match {
         case "--csv" => Neo4jLoader(args(1), confFile).convertBundleFile()
