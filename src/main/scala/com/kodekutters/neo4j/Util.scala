@@ -85,7 +85,7 @@ class Util(session: Session) {
       case s: TPLMarking => clean(s.tlp.value) + ",tlp"
       case _ => ""
     }
-    val nodeScript = s"CREATE (${Util.markingObjRefs} {marking_id:'$definition_id',marking:'$mark'})"
+    val nodeScript = s"CREATE (${Util.markingObjRefs}:${Util.markingObjRefs} {marking_id:'$definition_id',marking:'$mark'})"
     session.run(nodeScript)
     // write the markingObj relationships with the given id
     val relScript = s"MATCH (source {id:'$idString'}), (target {marking_id:'$definition_id'}) " +
@@ -100,7 +100,7 @@ class Util(session: Session) {
     if (killphases.nonEmpty) {
       val temp = kill_chain_phases_ids.replace("[", "").replace("]", "")
       val kp = (temp.split(",") zip killphases).foreach({ case (a, (b, c, d)) =>
-        val script = s"CREATE ($d {kill_chain_phase_id:$a,kill_chain_name:'$b',phase_name:'$c'})"
+        val script = s"CREATE ($d:kill_chain_phase {kill_chain_phase_id:$a,kill_chain_name:'$b',phase_name:'$c'})"
         session.run(script)
       })
       for (k <- temp.split(",")) {
@@ -120,7 +120,7 @@ class Util(session: Session) {
       val temp = external_references_ids.replace("[", "").replace("]", "")
       val kp = (temp.split(",") zip externRefs).foreach(
         { case (a, (b, c, d, e, f)) =>
-          val script = s"CREATE ($f {external_reference_id:$a" +
+          val script = s"CREATE ($f:external_reference {external_reference_id:$a" +
             s",source_name:'$b',description:'$c',url:'$d',external_id:'$e'})"
           session.run(script)
         }
@@ -143,7 +143,7 @@ class Util(session: Session) {
       val temp = granular_markings_ids.replace("[", "").replace("]", "")
       val kp = (temp.split(",") zip granulars).foreach(
         { case (a, (b, c, d, e)) =>
-          val script = s"CREATE ($e {granular_marking_id:$a" +
+          val script = s"CREATE ($e:granular_marking {granular_marking_id:$a" +
             s",selectors:$b,marking_ref:'$c',lang:'$d'})"
           session.run(script)
         }
@@ -168,9 +168,8 @@ class Util(session: Session) {
       })
       // write the object_refs relationships with the given ids
       for (k <- temp.split(",")) {
-        val rtype = "HAS_" + asCleanLabel(typeName.toUpperCase)
         val relScript = s"MATCH (source {id:'$idString'}), (target {object_ref_id:$k}) " +
-          s"CREATE (source)-[:$rtype]->(target)"
+          s"CREATE (source)-[:$typeName]->(target)"
         session.run(relScript)
       }
     }

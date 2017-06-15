@@ -51,6 +51,12 @@ For convenience a **"stixneoloader-1.0.jar"** file is in the "distrib" directory
 the Neo4j server. In addition the user **name** and **password** is also required. See **application.conf** 
 for an example setup.
 
+For example, to create a new test database, first create a directory, say "neodb". Launch the "Neo4j-3.2.1" app and 
+select "neodb" as the database location and click start. Once the status is started, open a browser 
+on "http://localhost:7474". Change the password, say "xxxx" and put this in the "application.conf" file. 
+**StixNeoLoader** will connect to this database (while status is started) using the "application.conf" file 
+name and password.
+
 To load the Stix objects into a Neo4j graph database, simply type at the prompt:
  
     java -jar stixneoloader-1.0.jar --csv stix_file.json config_file

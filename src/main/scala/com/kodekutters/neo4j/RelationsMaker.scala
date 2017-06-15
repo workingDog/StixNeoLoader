@@ -74,7 +74,6 @@ class RelationsMaker(session: Session) {
         s",target_ref:'${y.target_ref.toString()}'" +
         s",relationship_type:'${asCleanLabel(y.relationship_type)}'" +
         s",description:'${clean(y.description.getOrElse(""))}'"
-
       val lbl = asCleanLabel(y.relationship_type) + ":" + asCleanLabel(y.relationship_type)
       val script = s"MATCH (source {id:'${y.source_ref.toString()}'}), (target {id:'${y.target_ref.toString()}'}) " +
         s"CREATE (source)-[$lbl {$props}]->(target)"
@@ -93,14 +92,12 @@ class RelationsMaker(session: Session) {
         s",observed_data_id:$observed_data_ids" +
         s",where_sighted_refs_id:$where_sighted_refs_ids" +
         s",description:'${clean(y.description.getOrElse(""))}'"
-
       val lbl = Sighting.`type` + ":" + Sighting.`type`
       val script = s"MATCH (source {id:'${y.sighting_of_ref.toString}'}), (target {id:'${y.sighting_of_ref.toString}'}) " +
         s"CREATE (source)-[$lbl {$props}]->(target)"
       session.run(script)
-
-      util.createObjRefs(y.id.toString(), y.observed_data_refs, observed_data_ids, Util.observedDataRefs)
-      util.createObjRefs(y.id.toString(), y.where_sighted_refs, where_sighted_refs_ids, Util.whereSightedRefs)
+      util.createObjRefs(y.id.toString(), y.observed_data_refs, observed_data_ids, "OBSERVED_DATA")
+      util.createObjRefs(y.id.toString(), y.where_sighted_refs, where_sighted_refs_ids, "WHERE_SIGHTED")
     }
   }
 

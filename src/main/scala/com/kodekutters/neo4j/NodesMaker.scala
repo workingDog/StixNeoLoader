@@ -41,7 +41,7 @@ class NodesMaker(session: Session) {
     val granular_markings_ids = toIdArray(x.granular_markings)
     val external_references_ids = toIdArray(x.external_references)
     val object_marking_refs_arr = toStringIds(x.object_marking_refs)
-    val nodeAndLabel = asCleanLabel(asCleanLabel(x.`type`)) + ":" + asCleanLabel(x.`type`) + ":SDO"
+    val nodeAndLabel = asCleanLabel(x.`type`) + ":" + asCleanLabel(x.`type`) + ":SDO"
 
     def commonPart() = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}'" +
       s",type:'${x.`type`}'" +
@@ -53,11 +53,6 @@ class NodesMaker(session: Session) {
       s",object_marking_refs:$object_marking_refs_arr" +
       s",granular_markings:$granular_markings_ids" +
       s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'"
-
-    // write the external_references
-    util.createExternRefs(x.id.toString(), x.external_references, external_references_ids)
-    // write the granular_markings
-    util.createGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
 
     x.`type` match {
 
@@ -180,26 +175,31 @@ class NodesMaker(session: Session) {
 
       case _ => // do nothing for now
     }
+
+    // write the external_references
+    util.createExternRefs(x.id.toString(), x.external_references, external_references_ids)
+    // write the granular_markings
+    util.createGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
+
   }
 
   // the Relationship and Sighting
   def createSRONode(x: SRO) = {
-    // write the external_references
-    util.createExternRefs(x.id.toString(), x.external_references, toIdArray(x.external_references))
-    // write the granular_markings
-    util.createGranulars(x.id.toString(), x.granular_markings, toIdArray(x.granular_markings))
-
     if (x.isInstanceOf[Relationship]) {
       val y = x.asInstanceOf[Relationship]
-      val script = s"CREATE (RelationshipNode {id:'${x.id.toString()}',type:'${x.`type`}'})"
+      val script = s"CREATE (RelationshipNode:RelationshipNode:SRO {id:'${x.id.toString()}',type:'${x.`type`}'})"
       session.run(script)
     }
     else { // a Sighting
       val y = x.asInstanceOf[Sighting]
       // create a SightingNode to be the source node in the sighting relationship
-      val script = s"CREATE (SightingNode {id:'${x.id.toString()}',type:'${x.`type`}'})"
+      val script = s"CREATE (SightingNode:SightingNode:SRO {id:'${x.id.toString()}',type:'${x.`type`}'})"
       session.run(script)
     }
+    // write the external_references
+    util.createExternRefs(x.id.toString(), x.external_references, toIdArray(x.external_references))
+    // write the granular_markings
+    util.createGranulars(x.id.toString(), x.granular_markings, toIdArray(x.granular_markings))
   }
 
   // convert MarkingDefinition and LanguageContent
@@ -212,9 +212,9 @@ class NodesMaker(session: Session) {
         val granular_markings_ids = toIdArray(x.granular_markings)
         val external_references_ids = toIdArray(x.external_references)
         val object_marking_refs_arr = toStringIds(x.object_marking_refs)
-        val nodeAndLabel = asCleanLabel(asCleanLabel(x.`type`)) + ":" + asCleanLabel(x.`type`) + ":StixObj"
+        val nodeAndLabel = asCleanLabel(x.`type`) + ":" + asCleanLabel(x.`type`) + ":StixObj"
 
-        def commonPart() = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}'" +
+        def commonPart() = s"CREATE ($nodeAndLabel:marking_definition {id:'${x.id.toString()}'" +
           s",type:'${x.`type`}'" +
           s",created:'${x.created.time}'" +
           s",definition_type:'${clean(x.definition_type)}'" +
@@ -224,13 +224,13 @@ class NodesMaker(session: Session) {
           s",granular_markings:$granular_markings_ids" +
           s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'" + "})"
 
+        session.run(commonPart())
         // write the external_references
         util.createExternRefs(x.id.toString(), x.external_references, external_references_ids)
         // write the granular_markings
         util.createGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
         // write the marking object definition
         util.createMarkingObjRefs(x.id.toString(), x.definition, definition_id)
-        session.run(commonPart())
 
       // todo <----- contents: Map[String, Map[String, String]]
       case x: LanguageContent =>
@@ -238,9 +238,9 @@ class NodesMaker(session: Session) {
         val granular_markings_ids = toIdArray(x.granular_markings)
         val external_references_ids = toIdArray(x.external_references)
         val object_marking_refs_arr = toStringIds(x.object_marking_refs)
-        val nodeAndLabel = asCleanLabel(asCleanLabel(x.`type`)) + ":" + asCleanLabel(x.`type`) + ":StixObj"
+        val nodeAndLabel = asCleanLabel(x.`type`) + ":" + asCleanLabel(x.`type`) + ":StixObj"
 
-        def commonPart() = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}'" +
+        def commonPart() = s"CREATE ($nodeAndLabel:language_content {id:'${x.id.toString()}'" +
           s",type:'${x.`type`}'" +
           s",created:'${x.created.time}'" +
           s",modified:'${x.modified.time}'" +
@@ -253,11 +253,12 @@ class NodesMaker(session: Session) {
           s",granular_markings:$granular_markings_ids" +
           s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'" + "})"
 
+        session.run(commonPart())
         // write the external_references
         util.createExternRefs(x.id.toString(), x.external_references, external_references_ids)
         // write the granular_markings
         util.createGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
-        session.run(commonPart())
+
     }
   }
 
