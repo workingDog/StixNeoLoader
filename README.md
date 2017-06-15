@@ -16,7 +16,13 @@ and their relationships.
 domain objects (SDO) and relationships (SRO) to [Neo4j Cypher](https://neo4j.com/developer/cypher-query-language/) 
 nodes and relations statements. The statements are then executed to load the data into a Neo4j graph database. 
 This allows adding new nodes and relations to an existing Neo4j graph database.
-              
+      
+Similar tools in this repo are: 
+      
+1) [StixToNeo4j](https://github.com/workingDog/StixToNeo4j) using csv files and Neo4j import tool
+      
+2) [StixToNeoDB](https://github.com/workingDog/StixToNeoDB) using Neo4j Java API         
+        
 ### References
  
 1) [Neo4j](https://neo4j.com/)
