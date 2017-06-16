@@ -214,7 +214,7 @@ class NodesMaker(session: Session) {
         val object_marking_refs_arr = toStringIds(x.object_marking_refs)
         val nodeAndLabel = asCleanLabel(x.`type`) + ":" + asCleanLabel(x.`type`) + ":StixObj"
 
-        def commonPart() = s"CREATE ($nodeAndLabel:marking_definition {id:'${x.id.toString()}'" +
+        def commonPart() = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}'" +
           s",type:'${x.`type`}'" +
           s",created:'${x.created.time}'" +
           s",definition_type:'${clean(x.definition_type)}'" +
@@ -240,7 +240,7 @@ class NodesMaker(session: Session) {
         val object_marking_refs_arr = toStringIds(x.object_marking_refs)
         val nodeAndLabel = asCleanLabel(x.`type`) + ":" + asCleanLabel(x.`type`) + ":StixObj"
 
-        def commonPart() = s"CREATE ($nodeAndLabel:language_content {id:'${x.id.toString()}'" +
+        def commonPart() = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}'" +
           s",type:'${x.`type`}'" +
           s",created:'${x.created.time}'" +
           s",modified:'${x.modified.time}'" +
