@@ -185,17 +185,9 @@ class NodesMaker(session: Session) {
 
   // the Relationship and Sighting
   def createSRONode(x: SRO) = {
-    if (x.isInstanceOf[Relationship]) {
-      val y = x.asInstanceOf[Relationship]
-      val script = s"CREATE (RelationshipNode:RelationshipNode:SRO {id:'${x.id.toString()}',type:'${x.`type`}'})"
-      session.run(script)
-    }
-    else { // a Sighting
-      val y = x.asInstanceOf[Sighting]
-      // create a SightingNode to be the source node in the sighting relationship
-      val script = s"CREATE (SightingNode:SightingNode:SRO {id:'${x.id.toString()}',type:'${x.`type`}'})"
-      session.run(script)
-    }
+    val nodeAndLabel = asCleanLabel(x.`type`) + "_node:" + asCleanLabel(x.`type`) + "_node:SRO"
+    val script = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}',type:'${x.`type`}'})"
+    session.run(script)
     // create the external_references
     util.createExternRefs(x.id.toString(), x.external_references, toIdArray(x.external_references))
     // create the granular_markings
