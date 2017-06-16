@@ -58,7 +58,7 @@ the Neo4j server. In addition the user **name** and **password** is also require
 for an example setup.
 
 For example, to create a new test database, first create a directory, say "neodb". Launch the "Neo4j-3.2.1" app and 
-select "neodb" as the database location and click start. Once the status is started, open a browser 
+select "neodb" as the database location and click start. Once the status is "started", open a browser 
 on "http://localhost:7474". Change the password, say "xxxx" and put this in the "application.conf" file. 
 **StixNeoLoader** will connect to this database (while status is started) using the "application.conf" file 
 name and password.
@@ -92,8 +92,6 @@ in each.
 ### Status
 
 not finished.
-
-Loading small files is very slow. 
 
 Using Scala 2.12, Java 8 and SBT-0.13.15.
 

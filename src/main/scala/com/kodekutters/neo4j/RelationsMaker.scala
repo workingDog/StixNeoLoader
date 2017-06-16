@@ -72,7 +72,7 @@ class RelationsMaker(session: Session) {
       val props = commonPart() +
         s",source_ref:'${y.source_ref.toString()}'" +
         s",target_ref:'${y.target_ref.toString()}'" +
-        s",relationship_type:'${asCleanLabel(y.relationship_type)}'" +
+        s",relationship_type:'${clean(y.relationship_type)}'" +
         s",description:'${clean(y.description.getOrElse(""))}'"
       val lbl = asCleanLabel(y.relationship_type) + ":" + asCleanLabel(y.relationship_type)
       val script = s"MATCH (source {id:'${y.source_ref.toString()}'}), (target {id:'${y.target_ref.toString()}'}) " +

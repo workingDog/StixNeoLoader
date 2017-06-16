@@ -167,9 +167,9 @@ class NodesMaker(session: Session) {
       case ObservedData.`type` =>
         val y = x.asInstanceOf[ObservedData]
         val script = commonPart() +
-          s",first_observed:'${y.first_observed.toString()}" +
-          s",last_observed:'${y.last_observed.toString()}" +
-          s",number_observed:'${y.number_observed}" +
+          s",first_observed:'${y.first_observed.toString()}'" +
+          s",last_observed:'${y.last_observed.toString()}'" +
+          s",number_observed:'${y.number_observed}'" +
           s",description:'${clean(y.description.getOrElse(""))}'" + "})"
         session.run(script)
 

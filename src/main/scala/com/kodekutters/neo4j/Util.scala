@@ -39,8 +39,8 @@ object Util {
     }
   }
 
-  // clean the string, i.e. replace unwanted char
-  def clean(s: String) = s.replace(",", " ").replace(":", " ").replace("\'", " ").replace(";", " ").replace("\"", "").replace("\\", "").replace("\n", "").replace("\r", "")
+  // clean the string, i.e. escape special char
+  def clean(s: String) = s.replace("\\", """\\""").replace("'", """\'""").replace("\"", """\""").replace("\n", "").replace("\r", "")
 
   // make an array of id values from the input list
   def toIdArray(dataList: Option[List[Any]]) = {
@@ -61,7 +61,7 @@ object Util {
   }
 
   // the Neo4j :LABEL and :TYPE cannot deal with "-", so clean and replace with "_"
-  def asCleanLabel(s: String) = clean(s).replace("-", "_")
+  def asCleanLabel(s: String) = clean(s).replace("-", "_").replace(":", "").replace(";", "").replace(",", "")
 
 }
 
@@ -81,8 +81,8 @@ class Util(session: Session) {
   // write the marking object
   def createMarkingObjRefs(idString: String, definition: MarkingObject, definition_id: String) = {
     val mark: String = definition match {
-      case s: StatementMarking => clean(s.statement) + ",statement"
-      case s: TPLMarking => clean(s.tlp.value) + ",tlp"
+      case s: StatementMarking => clean(s.statement)
+      case s: TPLMarking => clean(s.tlp.value)
       case _ => ""
     }
     val nodeScript = s"CREATE (${Util.markingObjRefs}:${Util.markingObjRefs} {marking_id:'$definition_id',marking:'$mark'})"
