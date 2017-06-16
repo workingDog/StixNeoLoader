@@ -21,19 +21,11 @@ import com.typesafe.config.ConfigFactory
   * @author R. Wathelet June 2017
   *
   *         ref: https://github.com/workingDog/scalastix
-  */
-object Neo4jLoader {
-  // must use this constructor, class is private
-  def apply(inFile: String, conf: String) = new Neo4jLoader(inFile, conf)
-}
-
-/**
-  * loads Stix-2.1 objects (nodes) and relationships (edges) into a Neo4j database
   *
   * @param inFile   the input file to process
   * @param confFile the configuration file to use
   */
-class Neo4jLoader private(inFile: String, confFile: String) {
+class Neo4jLoader(inFile: String, confFile: String) {
 
   val config = ConfigFactory.parseFile(new File(confFile))
 

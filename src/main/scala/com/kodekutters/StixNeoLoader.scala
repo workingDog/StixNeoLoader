@@ -34,11 +34,12 @@ object StixNeoLoader {
     else {
       val conf = if (args.length == 3) args(2).trim else ""
       val confFile = if (conf.isEmpty) new java.io.File(".").getCanonicalPath + "/application.conf" else conf
+      val neoLoader = new Neo4jLoader(args(1), confFile)
       args(0) match {
-        case "--csv" => Neo4jLoader(args(1), confFile).processBundleFile()
-        case "--zip" => Neo4jLoader(args(1), confFile).processBundleZipFile()
-        case "--csvx" => Neo4jLoader(args(1), confFile).processStixFile()
-        case "--zipx" => Neo4jLoader(args(1), confFile).processStixZipFile()
+        case "--csv" => neoLoader.processBundleFile()
+        case "--zip" => neoLoader.processBundleZipFile()
+        case "--csvx" => neoLoader.processStixFile()
+        case "--zipx" => neoLoader.processStixZipFile()
         case x => println("unknown option: " + x + "\n"); println(usage)
       }
     }
