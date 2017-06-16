@@ -40,7 +40,9 @@ object Util {
   }
 
   // clean the string, i.e. escape special char
-  def clean(s: String) = s.replace("\\", """\\""").replace("'", """\'""").replace("\"", """\""").replace("\n", "").replace("\r", "")
+  def clean(s: String) = s.replace("\\", """\\""").replace("'", """\'""").
+    replace("\"", """\""").replace("\n", """\n""").replace("\r", """\r""").
+    replace("\b", """\b""").replace("\f", """\f""").replace("\t", """\t""")
 
   // make an array of id values from the input list
   def toIdArray(dataList: Option[List[Any]]) = {
