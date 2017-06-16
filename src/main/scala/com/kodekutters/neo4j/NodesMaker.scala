@@ -176,9 +176,9 @@ class NodesMaker(session: Session) {
       case _ => // do nothing for now
     }
 
-    // write the external_references
+    // create the external_references
     util.createExternRefs(x.id.toString(), x.external_references, external_references_ids)
-    // write the granular_markings
+    // create the granular_markings
     util.createGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
 
   }
@@ -196,9 +196,9 @@ class NodesMaker(session: Session) {
       val script = s"CREATE (SightingNode:SightingNode:SRO {id:'${x.id.toString()}',type:'${x.`type`}'})"
       session.run(script)
     }
-    // write the external_references
+    // create the external_references
     util.createExternRefs(x.id.toString(), x.external_references, toIdArray(x.external_references))
-    // write the granular_markings
+    // create the granular_markings
     util.createGranulars(x.id.toString(), x.granular_markings, toIdArray(x.granular_markings))
   }
 
@@ -225,11 +225,11 @@ class NodesMaker(session: Session) {
           s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'" + "})"
 
         session.run(commonPart())
-        // write the external_references
+        // create the external_references
         util.createExternRefs(x.id.toString(), x.external_references, external_references_ids)
-        // write the granular_markings
+        // create the granular_markings
         util.createGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
-        // write the marking object definition
+        // create the marking object definition
         util.createMarkingObjRefs(x.id.toString(), x.definition, definition_id)
 
       // todo <----- contents: Map[String, Map[String, String]]
@@ -254,9 +254,9 @@ class NodesMaker(session: Session) {
           s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'" + "})"
 
         session.run(commonPart())
-        // write the external_references
+        // create the external_references
         util.createExternRefs(x.id.toString(), x.external_references, external_references_ids)
-        // write the granular_markings
+        // create the granular_markings
         util.createGranulars(x.id.toString(), x.granular_markings, granular_markings_ids)
 
     }

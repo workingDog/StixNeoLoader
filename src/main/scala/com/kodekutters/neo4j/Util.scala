@@ -71,7 +71,7 @@ class Util(session: Session) {
 
   import Util._
 
-  // write the created-by relation between idString and the Identifier
+  // create the created-by relation between idString and the Identifier
   def createCreatedBy(idString: String, tgtOpt: Option[Identifier]) = {
     tgtOpt.map(tgt => {
       val relScript = s"MATCH (source {id:'$idString'}), (target {id:'${tgt.toString()}'}) " +
@@ -80,7 +80,7 @@ class Util(session: Session) {
     })
   }
 
-  // write the marking object
+  // create the marking object
   def createMarkingObjRefs(idString: String, definition: MarkingObject, definition_id: String) = {
     val mark: String = definition match {
       case s: StatementMarking => clean(s.statement)
@@ -95,7 +95,7 @@ class Util(session: Session) {
     session.run(relScript)
   }
 
-  // write the kill_chain_phases
+  // create the kill_chain_phases
   def createKillPhases(idString: String, kill_chain_phases: Option[List[KillChainPhase]], kill_chain_phases_ids: String) = {
     val killphases = for (s <- kill_chain_phases.getOrElse(List.empty))
       yield (clean(s.kill_chain_name), clean(s.phase_name), asCleanLabel(s.`type`))
@@ -113,7 +113,7 @@ class Util(session: Session) {
     }
   }
 
-  // write the external_references
+  // create the external_references
   def createExternRefs(idString: String, external_references: Option[List[ExternalReference]], external_references_ids: String) = {
     val externRefs = for (s <- external_references.getOrElse(List.empty))
       yield (clean(s.source_name), clean(s.description.getOrElse("")),
@@ -136,7 +136,7 @@ class Util(session: Session) {
     }
   }
 
-  // write the granular_markings
+  // create the granular_markings
   def createGranulars(idString: String, granular_markings: Option[List[GranularMarking]], granular_markings_ids: String) = {
     val granulars = for (s <- granular_markings.getOrElse(List.empty))
       yield (toStringArray(Option(s.selectors)), clean(s.marking_ref.getOrElse("")),
@@ -159,7 +159,7 @@ class Util(session: Session) {
     }
   }
 
-  // write the object_refs
+  // create the object_refs
   def createObjRefs(idString: String, object_refs: Option[List[Identifier]], object_refs_ids: String, typeName: String) = {
     val objRefs = for (s <- object_refs.getOrElse(List.empty)) yield clean(s.toString())
     if (objRefs.nonEmpty) {
@@ -186,6 +186,7 @@ class Util(session: Session) {
     }
   }
 
+  // create the created-by-ref relation
   def createdByRel(sourceId: String, tgtOpt: Option[Identifier]) = {
     tgtOpt.map(tgt => {
       val relScript = s"MATCH (source {id:'$sourceId'}), (target {id:'${tgt.toString()}'}) " +
