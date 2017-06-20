@@ -97,7 +97,7 @@ class RelationsMaker(session: Session) {
         s"CREATE (source)-[$lbl {$props}]->(target)"
       session.run(script)
       util.createObjRefs(y.id.toString(), y.observed_data_refs, observed_data_ids, "OBSERVED_DATA")
-      util.createObjRefs(y.id.toString(), y.where_sighted_refs, where_sighted_refs_ids, "WHERE_SIGHTED")
+      util.createObjRefs(y.sighting_of_ref.toString, y.where_sighted_refs, where_sighted_refs_ids, "WHERE_SIGHTED")
     }
   }
 
