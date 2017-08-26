@@ -1,5 +1,9 @@
 ## Loads STIX-2.1 to a Neo4j graph database
 
+
+### No longer maintained, see [StixToNeoDB](https://github.com/workingDog/StixToNeoDB) instead.
+
+
 This application **StixNeoLoader**, loads [STIX-2.1](https://docs.google.com/document/d/1yvqWaPPnPW-2NiVCLqzRszcx91ffMowfT5MmE9Nsy_w/edit#) 
 objects and relations from json and zip files into a [Neo4j](https://neo4j.com/) graph database. 
 
@@ -16,10 +20,7 @@ and their relationships.
 domain objects (SDO) and relationships (SRO) to [Neo4j Cypher](https://neo4j.com/developer/cypher-query-language/) 
 nodes and relations statements. The statements are then executed to load the data into a Neo4j graph database. 
 This allows adding new nodes and relations to an existing Neo4j graph database.
-   
-### Another tool              
-A better tool in this repo that provides for the creation and update of existing databases is [StixToNeoDB](https://github.com/workingDog/StixToNeoDB).
-         
+        
 ### References
  
 1) [Neo4j](https://neo4j.com/)
@@ -88,7 +89,7 @@ in each.
  
 ### Status
 
-not finished.
+never finished, use [StixToNeoDB](https://github.com/workingDog/StixToNeoDB) instead.
 
 Using Scala 2.12, Java 8 and SBT-0.13.15.
 
