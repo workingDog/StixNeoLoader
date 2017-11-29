@@ -33,10 +33,9 @@ This allows adding new nodes and relations to an existing Neo4j graph database.
 
 ### Dependencies and requirements
 
-Depends on the scala [ScalaStix](https://github.com/workingDog/scalastix) library
-(included in the "lib" directory).
+Depends on the scala [ScalaStix](https://github.com/workingDog/scalastix) library.
 
-Java 8 is required and Neo4j needs to be installed.
+Java 8 is required and Neo4j should be installed.
 
 ### Installation and packaging
 
@@ -52,8 +51,9 @@ For convenience a **"stixneoloader-1.0.jar"** file is in the "distrib" directory
 ### Usage
 
 **StixNeoLoader** must have a configuration file containing the values for the **host** and **port** of 
-the Neo4j server. In addition the user **name** and **password** is also required. See **application.conf** 
-for an example setup.
+the Neo4j server. In addition the user **name** and **password** is required. 
+To also output all cypher statements to a text file, add a **cypherFile** field in the configuration file.
+See **application.conf** for an example setup.
 
 For example, to create a new test database, first create a directory, say "neodb". Launch the "Neo4j-3.2.1" app and 
 select "neodb" as the database location and click start. Once the status is "started", open a browser 
@@ -63,13 +63,14 @@ name and password.
 
 To load the Stix objects into a Neo4j graph database, simply type at the prompt:
  
-    java -jar stixneoloader-1.0.jar --csv stix_file.json config_file
+    java -jar stixneoloader-1.0.jar --json stix_file.json config_file
     or
     java -jar stixneoloader-1.0.jar --zip stix_file.zip config_file
  
-With the option **--csv** the input file "stix_file.json" is the file containing a 
+With the option **--json** the input file "stix_file.json" is the file containing a 
 bundle of Stix objects you want to convert, and "config_file" is the optional configuration file to use. 
-If the configuration file is absent, the default "application.conf" in the current directory is used.
+If the configuration file argument is absent, the default "application.conf" in the current directory is used.
+In this case ensure that the **application.conf** file is in the same directory as the jar file.
  
 With the option **--zip** the input file must be a zip file with one or more entry files containing a single bundle of Stix objects 
 in each.
@@ -78,11 +79,11 @@ in each.
  
  To process very large files use the following options:
  
-     java -jar stixtoneo4j-1.0.jar --csvx stix_file.json config_file
+     java -jar stixtoneo4j-1.0.jar --jsonx stix_file.json config_file
      or
      java -jar stixtoneo4j-1.0.jar --zipx stix_file.zip config_file
  
- With the **--csvx** option the input file must contain a Stix object on one line 
+ With the **--jsonx** option the input file must contain a Stix object on one line 
  ending with a new line. Similarly when using the **--zipx** option, each input zip file entries must 
  contain a Stix object on one line ending with a new line. When using these options 
  the processing is done one line at a time.
@@ -91,6 +92,6 @@ in each.
 
 never finished, use [StixToNeoDB](https://github.com/workingDog/StixToNeoDB) instead.
 
-Using Scala 2.12, Java 8 and SBT-0.13.15.
+Using Scala 2.12, Java 8 and SBT-1.0.3
 
 

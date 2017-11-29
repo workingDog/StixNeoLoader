@@ -30,8 +30,8 @@ releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   publishArtifacts,
-  ReleaseStep(action = Command.process("publishSigned", _)),
-  releaseStepCommand("sonatypeRelease"),
+//  ReleaseStep(action = Command.process("publishSigned", _)),
+//  releaseStepCommand("sonatypeRelease"),
   setNextVersion,
   commitNextVersion,
   pushChanges

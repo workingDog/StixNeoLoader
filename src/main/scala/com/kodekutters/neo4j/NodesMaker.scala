@@ -62,7 +62,7 @@ class NodesMaker(session: Session) {
         val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" +
           s",kill_chain_phases:$kill_chain_phases_ids" + "})"
-        session.run(script)
+        util.runScript(script)
         util.createKillPhases(y.id.toString(), y.kill_chain_phases, kill_chain_phases_ids)
 
       case Identity.`type` =>
@@ -72,7 +72,7 @@ class NodesMaker(session: Session) {
           s",sectors:${toStringArray(y.sectors)}" +
           s",contact_information:'${clean(y.contact_information.getOrElse(""))}'" +
           s",description:'${clean(y.description.getOrElse(""))}'" + "})"
-        session.run(script)
+        util.runScript(script)
 
       case Campaign.`type` =>
         val y = x.asInstanceOf[Campaign]
@@ -82,13 +82,13 @@ class NodesMaker(session: Session) {
           s",first_seen:'${clean(y.first_seen.getOrElse("").toString)}" +
           s",last_seen:'${clean(y.last_seen.getOrElse("").toString)}" +
           s",description:'${clean(y.description.getOrElse(""))}'" + "})"
-        session.run(script)
+        util.runScript(script)
 
       case CourseOfAction.`type` =>
         val y = x.asInstanceOf[CourseOfAction]
         val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" + "})"
-        session.run(script)
+        util.runScript(script)
 
       case IntrusionSet.`type` =>
         val y = x.asInstanceOf[IntrusionSet]
@@ -101,7 +101,7 @@ class NodesMaker(session: Session) {
           s",resource_level:'${clean(y.resource_level.getOrElse(""))}'" +
           s",primary_motivation:'${clean(y.primary_motivation.getOrElse(""))}'" +
           s",secondary_motivations:${toStringArray(y.secondary_motivations)}" + "})"
-        session.run(script)
+        util.runScript(script)
 
       case Malware.`type` =>
         val y = x.asInstanceOf[Malware]
@@ -109,7 +109,7 @@ class NodesMaker(session: Session) {
         val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" +
           s",kill_chain_phases:$kill_chain_phases_ids" + "})"
-        session.run(script)
+        util.runScript(script)
         util.createKillPhases(y.id.toString(), y.kill_chain_phases, kill_chain_phases_ids)
 
       case Report.`type` =>
@@ -119,7 +119,7 @@ class NodesMaker(session: Session) {
           s",name:'${clean(y.name)}',published:'${y.published.toString()}'" +
           s",object_refs_ids:$object_refs_ids" +
           s",description:'${clean(y.description.getOrElse(""))}'" + "})"
-        session.run(script)
+        util.runScript(script)
 
       case ThreatActor.`type` =>
         val y = x.asInstanceOf[ThreatActor]
@@ -133,7 +133,7 @@ class NodesMaker(session: Session) {
           s",primary_motivation:'${clean(y.primary_motivation.getOrElse(""))}'" +
           s",secondary_motivations:${toStringArray(y.secondary_motivations)}" +
           s",personal_motivations:${toStringArray(y.personal_motivations)}" + "})"
-        session.run(script)
+        util.runScript(script)
 
       case Tool.`type` =>
         val y = x.asInstanceOf[Tool]
@@ -142,14 +142,14 @@ class NodesMaker(session: Session) {
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" +
           s",kill_chain_phases:$kill_chain_phases_ids" +
           s",tool_version:'${clean(y.tool_version.getOrElse(""))}'" + "})"
-        session.run(script)
+        util.runScript(script)
         util.createKillPhases(y.id.toString(), y.kill_chain_phases, kill_chain_phases_ids)
 
       case Vulnerability.`type` =>
         val y = x.asInstanceOf[Vulnerability]
         val script = commonPart() +
           s",name:'${clean(y.name)}',description:'${clean(y.description.getOrElse(""))}'" + "})"
-        session.run(script)
+        util.runScript(script)
 
       case Indicator.`type` =>
         val y = x.asInstanceOf[Indicator]
@@ -160,7 +160,7 @@ class NodesMaker(session: Session) {
           s",valid_from:'${y.valid_from.toString()}'" +
           s",valid_until:'${clean(y.valid_until.getOrElse("").toString)}'" +
           s",kill_chain_phases:$kill_chain_phases_ids" + "})"
-        session.run(script)
+        util.runScript(script)
         util.createKillPhases(y.id.toString(), y.kill_chain_phases, kill_chain_phases_ids)
 
       // todo  objects: Map[String, Observable],
@@ -171,7 +171,7 @@ class NodesMaker(session: Session) {
           s",last_observed:'${y.last_observed.toString()}'" +
           s",number_observed:'${y.number_observed}'" +
           s",description:'${clean(y.description.getOrElse(""))}'" + "})"
-        session.run(script)
+        util.runScript(script)
 
       case _ => // do nothing for now
     }
@@ -187,7 +187,7 @@ class NodesMaker(session: Session) {
   def createSRONode(x: SRO) = {
     val nodeAndLabel = asCleanLabel(x.`type`) + "_node:" + asCleanLabel(x.`type`) + "_node:SRO"
     val script = s"CREATE ($nodeAndLabel {id:'${x.id.toString()}',type:'${x.`type`}'})"
-    session.run(script)
+    util.runScript(script)
     // create the external_references
     util.createExternRefs(x.id.toString(), x.external_references, toIdArray(x.external_references))
     // create the granular_markings
@@ -216,7 +216,7 @@ class NodesMaker(session: Session) {
           s",granular_markings:$granular_markings_ids" +
           s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'" + "})"
 
-        session.run(commonPart())
+        util.runScript(commonPart())
         // create the external_references
         util.createExternRefs(x.id.toString(), x.external_references, external_references_ids)
         // create the granular_markings
@@ -245,7 +245,7 @@ class NodesMaker(session: Session) {
           s",granular_markings:$granular_markings_ids" +
           s",created_by_ref:'${x.created_by_ref.getOrElse("").toString}'" + "})"
 
-        session.run(commonPart())
+        util.runScript(commonPart())
         // create the external_references
         util.createExternRefs(x.id.toString(), x.external_references, external_references_ids)
         // create the granular_markings

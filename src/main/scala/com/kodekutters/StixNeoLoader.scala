@@ -16,12 +16,12 @@ object StixNeoLoader {
 
   val usage =
     """Usage:
-       java -jar stixneoloader-1.0.jar --csv stix_file.json config_file
+       java -jar stixneoloader-1.0.jar --json stix_file.json config_file
         or
        java -jar stixneoloader-1.0.jar --zip stix_file.zip config_file
 
        config_file is optional, the default is application.conf
-       the options --csvx and --zipx can also be used for large files""".stripMargin
+       the options --jsonx and --zipx can also be used for large files""".stripMargin
 
   /**
     * loads a Stix json file containing STIX objects, or
@@ -36,9 +36,9 @@ object StixNeoLoader {
       val confFile = if (conf.isEmpty) new java.io.File(".").getCanonicalPath + "/application.conf" else conf
       val neoLoader = new Neo4jLoader(args(1), confFile)
       args(0) match {
-        case "--csv" => neoLoader.processBundleFile()
+        case "--json" => neoLoader.processBundleFile()
         case "--zip" => neoLoader.processBundleZipFile()
-        case "--csvx" => neoLoader.processStixFile()
+        case "--jsonx" => neoLoader.processStixFile()
         case "--zipx" => neoLoader.processStixZipFile()
         case x => println("unknown option: " + x + "\n"); println(usage)
       }

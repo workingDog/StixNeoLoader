@@ -1,13 +1,12 @@
 package com.kodekutters.neo4j
 
 import org.neo4j.driver.v1.Session
-import java.io.{File, InputStream}
+import java.io.{File, InputStream, _}
 import java.util.UUID
 
 import com.kodekutters.stix._
 import com.kodekutters.stix.Bundle
-import io.circe.generic.auto._
-import io.circe.parser.decode
+import play.api.libs.json.Json
 
 import scala.io.Source
 import scala.language.implicitConversions
@@ -21,7 +20,24 @@ object Util {
   val markingObjRefs = "marking_object_refs"
   val createdByRefs = "created_by"
 
+  // the file to write the cypher statements to
+  var pw: PrintWriter = _
+
+  var cypherFile: String = _
+
   def apply(session: Session) = new Util(session)
+
+  def setCypherFile(theFile: String) {
+    cypherFile = theFile
+    if (cypherFile != null) {
+      println("cypher statements will be in: " + cypherFile)
+      pw = new PrintWriter(new java.io.File(cypherFile))
+    }
+  }
+
+  def close() {
+    if (pw != null) pw.close()
+  }
 
   /**
     * read a Bundle from the input source
@@ -33,9 +49,9 @@ object Util {
     // read a STIX bundle from the InputStream
     val jsondoc = Source.fromInputStream(source).mkString
     // create a bundle object from it
-    decode[Bundle](jsondoc) match {
-      case Left(failure) => println("-----> ERROR invalid bundle JSON in zip file: \n"); None
-      case Right(bundle) => Option(bundle)
+    Json.fromJson[Bundle](Json.parse(jsondoc)).asOpt match {
+      case None => println("-----> ERROR invalid bundle JSON in zip file: \n"); None
+      case Some(bundle) => Option(bundle)
     }
   }
 
@@ -71,12 +87,17 @@ class Util(session: Session) {
 
   import Util._
 
+  def runScript(theScript: String) = {
+    if (session != null) session.run(theScript)
+    if (pw != null) pw.write(theScript)
+  }
+
   // create the created-by relation between idString and the Identifier
   def createCreatedBy(idString: String, tgtOpt: Option[Identifier]) = {
     tgtOpt.map(tgt => {
       val relScript = s"MATCH (source {id:'$idString'}), (target {id:'${tgt.toString()}'}) " +
         s"CREATE (source)-[:CREATED_BY]->(target)"
-      session.run(relScript)
+      runScript(relScript)
     })
   }
 
@@ -88,11 +109,11 @@ class Util(session: Session) {
       case _ => ""
     }
     val nodeScript = s"CREATE (${Util.markingObjRefs}:${Util.markingObjRefs} {marking_id:'$definition_id',marking:'$mark'})"
-    session.run(nodeScript)
+    runScript(nodeScript)
     // write the markingObj relationships with the given id
     val relScript = s"MATCH (source {id:'$idString'}), (target {marking_id:'$definition_id'}) " +
       s"CREATE (source)-[:HAS_MARKING_OBJECT]->(target)"
-    session.run(relScript)
+    runScript(relScript)
   }
 
   // create the kill_chain_phases
@@ -103,12 +124,12 @@ class Util(session: Session) {
       val temp = kill_chain_phases_ids.replace("[", "").replace("]", "")
       val kp = (temp.split(",") zip killphases).foreach({ case (a, (b, c, d)) =>
         val script = s"CREATE ($d:kill_chain_phase {kill_chain_phase_id:$a,kill_chain_name:'$b',phase_name:'$c'})"
-        session.run(script)
+        runScript(script)
       })
       for (k <- temp.split(",")) {
         val relScript = s"MATCH (source {id:'$idString'}), (target {kill_chain_phase_id:$k}) " +
           s"CREATE (source)-[:HAS_KILL_CHAIN_PHASE]->(target)"
-        session.run(relScript)
+        runScript(relScript)
       }
     }
   }
@@ -124,14 +145,14 @@ class Util(session: Session) {
         { case (a, (b, c, d, e, f)) =>
           val script = s"CREATE ($f:external_reference {external_reference_id:$a" +
             s",source_name:'$b',description:'$c',url:'$d',external_id:'$e'})"
-          session.run(script)
+          runScript(script)
         }
       )
       // write the external_reference relationships with the given ids
       for (k <- temp.split(",")) {
         val relScript = s"MATCH (source {id:'$idString'}), (target {external_reference_id:$k}) " +
           s"CREATE (source)-[:HAS_EXTERNAL_REF]->(target)"
-        session.run(relScript)
+        runScript(relScript)
       }
     }
   }
@@ -147,14 +168,14 @@ class Util(session: Session) {
         { case (a, (b, c, d, e)) =>
           val script = s"CREATE ($e:granular_marking {granular_marking_id:$a" +
             s",selectors:$b,marking_ref:'$c',lang:'$d'})"
-          session.run(script)
+          runScript(script)
         }
       )
       // write the granular_markings relationships with the given ids
       for (k <- temp.split(",")) {
         val relScript = s"MATCH (source {id:'$idString'}), (target {granular_marking_id:$k}) " +
           s"CREATE (source)-[:HAS_GRANULAR_MARKING]->(target)"
-        session.run(relScript)
+        runScript(relScript)
       }
     }
   }
@@ -166,13 +187,13 @@ class Util(session: Session) {
       val temp = object_refs_ids.replace("[", "").replace("]", "")
       val kp = (temp.split(",") zip objRefs).foreach({ case (a, b) =>
         val script = s"CREATE (${asCleanLabel(typeName)} {object_ref_id:$a,identifier:'$b'})"
-        session.run(script)
+        runScript(script)
       })
       // write the object_refs relationships with the given ids
       for (k <- temp.split(",")) {
         val relScript = s"MATCH (source {id:'$idString'}), (target {object_ref_id:$k}) " +
           s"CREATE (source)-[:$typeName]->(target)"
-        session.run(relScript)
+        runScript(relScript)
       }
     }
   }
@@ -182,7 +203,7 @@ class Util(session: Session) {
     for (s <- object_refs.getOrElse(List.empty)) {
       val relScript = s"MATCH (source {id:'$idString'}), (target {id:'${s.toString()}'}) " +
         s"CREATE (source)-[:$relName]->(target)"
-      session.run(relScript)
+      runScript(relScript)
     }
   }
 
@@ -191,7 +212,7 @@ class Util(session: Session) {
     tgtOpt.map(tgt => {
       val relScript = s"MATCH (source {id:'$sourceId'}), (target {id:'${tgt.toString()}'}) " +
         s"CREATE (source)-[:CREATED_BY]->(target)"
-      session.run(relScript)
+      runScript(relScript)
     }
     )
   }

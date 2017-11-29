@@ -4,16 +4,15 @@ import java.io.File
 
 import com.kodekutters.stix._
 import com.kodekutters.stix.Bundle
-import io.circe.generic.auto._
-import io.circe.parser.decode
 
 import scala.io.Source
 import scala.language.implicitConversions
 import scala.language.postfixOps
-import org.neo4j.driver.v1.{AuthTokens, GraphDatabase}
+import org.neo4j.driver.v1.{AuthTokens, Driver, GraphDatabase}
 
 import scala.collection.JavaConverters._
 import com.typesafe.config.ConfigFactory
+import play.api.libs.json.Json
 
 /**
   * loads Stix-2.1 objects and relationships into a Neo4j graph database
@@ -21,7 +20,6 @@ import com.typesafe.config.ConfigFactory
   * @author R. Wathelet June 2017
   *
   *         ref: https://github.com/workingDog/scalastix
-  *
   * @param inFile   the input file to process
   * @param confFile the configuration file to use
   */
@@ -29,11 +27,22 @@ class Neo4jLoader(inFile: String, confFile: String) {
 
   val config = ConfigFactory.parseFile(new File(confFile))
 
-  val driver = GraphDatabase.driver(
-    "bolt://" + config.getString("host") + "/" + config.getString("port"),
-    AuthTokens.basic(config.getString("name"), config.getString("psw")))
+  try {
+    Util.setCypherFile(config.getString("cypherFile"))
+  } catch {
+    case x: Throwable => Util.setCypherFile(null)
+  }
 
-  val session = driver.session
+  var driver: Driver = _
+    try {
+      driver = GraphDatabase.driver(
+      "bolt://" + config.getString("host") + "/" + config.getString("port"),
+      AuthTokens.basic(config.getString("name"), config.getString("psw")))
+  } catch {
+    case x: Throwable => println("no database connection"); driver = null
+  }
+
+  val session = if (driver != null) driver.session else null
 
   // the nodes maker for creating nodes and their internal relations
   val nodesMaker = new NodesMaker(session)
@@ -41,8 +50,12 @@ class Neo4jLoader(inFile: String, confFile: String) {
   val relsMaker = new RelationsMaker(session)
 
   def closeAll() = {
-    session.close()
-    driver.close()
+    if (driver != null) {
+      session.close()
+      driver.close()
+    }
+    Util.close()
+    println("---> all done")
   }
 
   // process a bundle of Stix objects
@@ -61,9 +74,9 @@ class Neo4jLoader(inFile: String, confFile: String) {
     // read a STIX bundle from the inFile
     val jsondoc = Source.fromFile(inFile).mkString
     // create a bundle object from it, convert its objects to nodes and relations
-    decode[Bundle](jsondoc) match {
-      case Left(failure) => println("\n-----> ERROR reading bundle in file: " + inFile)
-      case Right(bundle) => processBundle(bundle)
+    Json.fromJson[Bundle](Json.parse(jsondoc)).asOpt match {
+      case None => println("\n-----> ERROR reading bundle in file: " + inFile)
+      case Some(bundle) => processBundle(bundle)
     }
     closeAll()
   }
@@ -101,9 +114,9 @@ class Neo4jLoader(inFile: String, confFile: String) {
       // read a STIX object from the inFile, one line at a time
       for (line <- Source.fromFile(inFile).getLines) {
         // create a Stix object from it and convert it to node or relation
-        decode[StixObj](line) match {
-          case Left(failure) => println("\n-----> ERROR reading StixObj in file: " + inFile + " line: " + line)
-          case Right(stixObj) =>
+        Json.fromJson[StixObj](Json.parse(line)).asOpt match {
+          case None => println("\n-----> ERROR reading StixObj in file: " + inFile + " line: " + line)
+          case Some(stixObj) =>
             if (pass == 1)
               nodesMaker.createNodes(stixObj)
             else
@@ -138,9 +151,9 @@ class Neo4jLoader(inFile: String, confFile: String) {
         // read a Stix object from the inputLines, one line at a time
         for (line <- inputLines) {
           // create a Stix object from it, convert and write it out
-          decode[StixObj](line) match {
-            case Left(failure) => println("\n-----> ERROR reading StixObj in file: " + f.getName + " line: " + line)
-            case Right(stixObj) =>
+          Json.fromJson[StixObj](Json.parse(line)).asOpt match {
+            case None => println("\n-----> ERROR reading StixObj in file: " + f.getName + " line: " + line)
+            case Some(stixObj) =>
               if (pass == 1)
                 nodesMaker.createNodes(stixObj)
               else
