@@ -1,8 +1,6 @@
 ## Loads STIX-2.1 to a Neo4j graph database
 
-
-### No longer maintained, see [StixToNeoDB](https://github.com/workingDog/StixToNeoDB) instead.
-
+### No longer maintained, see [StixToNeoDB](https://github.com/workingDog/StixToNeoDB) or [StixLoader](https://github.com/workingDog/stixloader) instead.
 
 This application **StixNeoLoader**, loads [STIX-2.1](https://docs.google.com/document/d/1yvqWaPPnPW-2NiVCLqzRszcx91ffMowfT5MmE9Nsy_w/edit#) 
 objects and relations from json and zip files into a [Neo4j](https://neo4j.com/) graph database. 
